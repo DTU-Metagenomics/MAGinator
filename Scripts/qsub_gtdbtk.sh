@@ -26,4 +26,4 @@ cd $PBS_O_WORKDIR
 export PATH=/home/projects/cu_10108/data/Bin/Programs/miniconda3/bin:$PATH
 MAGDIR=$1
 OUTDIR=$2
-/home/projects/cu_10108/data/Bin/Programs/miniconda3/bin/gtdbtk classify_wf --genome_dir "$MAGDIR" --out_dir "$OUTDIR" --cpus 10 --force --debug
+/home/projects/cu_10108/data/Bin/Programs/miniconda3/bin/gtdbtk classify_wf --genome_dir "$MAGDIR" --out_dir "$OUTDIR" --cpus 10 --force --debug --pplacer_cpus 5
