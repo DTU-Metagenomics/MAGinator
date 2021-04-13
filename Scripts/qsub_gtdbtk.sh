@@ -10,7 +10,7 @@
 ### Only send mail when job is aborted or terminates abnormally
 #PBS -m n
 ### Number of nodes
-#PBS -l nodes=fatnode
+#PBS -l nodes=1:ppn=40:fatnode
 ### Requesting time - format is <days>:<hours>:<minutes>:<seconds> (here, 30 days)
 #PBS -l walltime=30:0:00:00
 # V1.00 Written by Gisle Vestergaard (gislevestergaard@gmail.com)
