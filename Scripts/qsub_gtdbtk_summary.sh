@@ -25,3 +25,4 @@ cat bins_0*_gtdbtk/gtdbtk.bac120.summary.tsv | awk '!x[$0]++' >> allbins_gtdbtk_
 cat allbins_gtdbtk_bac120_summary.tsv | cut -f1,2 | cut -f 2- -d _ | sort -gk1,1 > allbins_gtdbtk_bac120_summary_per_cluster.tsv
 cat bins_0*_gtdbtk/gtdbtk.ar122.summary.tsv | awk '!x[$0]++' >> allbins_gtdbtk_ar122_summary.tsv
 cat allbins_gtdbtk_ar122_summary.tsv | cut -f1,2 | cut -f 2- -d _ | sort -gk1,1 > allbins_gtdbtk_ar122_summary_per_cluster.tsv
+cat allbins_gtdbtk_*_summary.tsv | grep -v '^user_genome' | cut -f 1 | cut -f 2 -d _ | sort | uniq | sort -g > allbins_gtdbtk_clusters_with_taxonomy.tsv
