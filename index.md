@@ -18,9 +18,13 @@ This example binning workflow was used for fecal samples. It is provided mainly 
 9. Now we are ready to bin using [this script](https://github.com/gisleDK/Vamb_tools/blob/main/Scripts/qsub_vamb_bin.sh) which is running the GPU-accelerated [VAMB](https://github.com/RasmussenLab/vamb).
 ## Installation on Linux
 MAGinator uses conda environments and snakemake. First you will need to install [miniconda] with Python 3.9. We download miniconda:
-wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh
-bash Miniconda3-py39_4.9.2-Linux-x86_64.sh
-Follow the instructions and remember to locate miniconda in an appropriate location.
+wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh 
+> bash Miniconda3-py39_4.9.2-Linux-x86_64.sh
+
+Follow the instructions and remember to install miniconda in an appropriate location.
+You will also need the package manager mamba
+> conda install -c conda-forge mamba
+
 ## Postprocessing contig-based bins from VAMB
 <img align="right" src="https://github.com/gisleDK/Metagenomic-bin-processor/blob/gh-pages/plot_binsizes.png?raw=true" width="500">
 
