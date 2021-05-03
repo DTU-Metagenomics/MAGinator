@@ -1,12 +1,12 @@
-# Metagenomic bin processor
+# MAGinator
 ## Introduction
-This is a collection of tools that should help with downstream analysis of data obtained from metagenomic binnser such as Vamb or MSPMiner.
-Vamb provides not only the binning clusters of all related contigs but also the bins obtained from individual samples and like many other programs allows a lot of options. Be aware that your question should dictate your workflow but I am providing information about how I run Vamb to allow better reproduction of my workflows.
+This is a collection of tools that should help with downstream analysis of data obtained from metagenomic binners such as Vamb or MSPMiner.
+Vamb provides not only the binning clusters of all related contigs but also the bins obtained from individual samples and like many other programs allows a lot of options. Be aware that your question should dictate your workflow but I am providing information about how I run Vamb to allow better reproduction and as inspiration.
 The provided scripts are all made for high-performance computing servers using a TORQUE Resource Manager and more specifically tested/running on [Computerome 2.0](https://www.computerome.dk/display/C2W/Computerome+2.0). The goal is to provide a snakemake worfklow incorporating conda environments for a user-friendly and reproducible workflow.
 <img align="center" src="https://github.com/gisleDK/Metagenomic-bin-processor/blob/gh-pages/workflow.png?raw=true" width="600">
-## Binning using Vamb
+### Binning using Vamb
 This example binning workflow was used for fecal samples. It is provided mainly to allow reproduction, but can of course be used. Remember to adjust according to your data and hypothesis. You should also check input/output using [FastQC](https://github.com/s-andrews/FastQC) at every step to insure optimal quality. For VAMB documentation look at [Vambs](https://github.com/RasmussenLab/vamb) Github which now includes a snakemake! <br>
-### Overview
+#### Overview
 1. [This script](https://github.com/gisleDK/Vamb_tools/blob/main/Scripts/qsub_bbduk_KTrim.sh) removes adapter sequence from raw reads using [bbduk](https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/).
 2. [This script](https://github.com/gisleDK/Vamb_tools/blob/main/Scripts/qsub_sickle.sh) performs trimming of low quality sequence using [Sickle](https://github.com/najoshi/sickle).
 3. [This script](https://github.com/gisleDK/Vamb_tools/blob/main/Scripts/qsub_bbmap_Decon.sh) removes host contamination [bbmap](https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/).
@@ -17,7 +17,7 @@ This example binning workflow was used for fecal samples. It is provided mainly 
 8. [This script](https://github.com/gisleDK/Vamb_tools/blob/main/Scripts/qsub_fasta_coverage.sh) analyses the contig coverage using JGIs [jgi_summarize_bam_contig_depths](https://bitbucket.org/berkeleylab/metabat/src/master/), which is actually part of the Metabat binner.
 9. Now we are ready to bin using [this script](https://github.com/gisleDK/Vamb_tools/blob/main/Scripts/qsub_vamb_bin.sh) which is running the GPU-accelerated [VAMB](https://github.com/RasmussenLab/vamb).
 
-## Postprocessing bins
+## Postprocessing contig-based bins from VAMB
 <img align="right" src="https://github.com/gisleDK/Metagenomic-bin-processor/blob/gh-pages/plot_binsizes.png?raw=true" width="500">
 
 The binning workflows suggested do not have a lower cut-off for bins. This means that we will have many small bins of which some will be of little use.
