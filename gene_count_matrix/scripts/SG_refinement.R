@@ -20,15 +20,11 @@ library(parallel) #for parallizing; mclapply
 
 
 # initializing
-#work_dir = "/Users/trizac/Dropbox/CM/VAMB/"
-#data_dir = "/Users/trizac/Desktop/VAMB_R_data/"
-#setwd(work_dir)
 
+Clusterlist <- readRDS(snakemake@input[["R_clusters"]])
+GeneLengths <- readRDS(snakemake@input[["R_gene_lengths"]])
 
-Clusterlist <- readRDS(paste(data_dir, "Cluster.RDS", sep=""))
-GeneLengths <- readRDS(paste(data_dir, 'VAMB_genelengths.RDS', sep=""))
-
-#source("/Users/trizac/Dropbox/CM/Artikel/R_Anders/Functions_v4.R")
+snakemake@source(snakemake@params[["functions"]])
 
 #Number of signature genes
 n.genes <- 100
@@ -60,8 +56,8 @@ mapped_samples <- c()
 n_samples <- c()
 
 
-if(file.exists(paste(data_dir, "clusters_screened.RData", sep = ""))){
-  load(paste(data_dir, "clusters_screened.RData", sep = ""))
+if(file.exists(snakemake@output[["screened_clusters"]])){
+  load(snakemake@output[["screened_clusters"]])
    Clusterlist <- clusterlist_screened
    rm(clusterlist_screened)
 }else{
@@ -102,7 +98,7 @@ if(file.exists(paste(data_dir, "clusters_screened.RData", sep = ""))){
 
         vars <- c(vars,var(in_window),na.rm=T)
         #fewer than 1% of samples are outliers
-        if(sum(in_window>upper_bound | in_window<lower_bound)<=window_size/100){
+        if(sum(in_window>upper_bound | in_window<lower_bound)<=window_size/100){
           good_set_found <- T
           break
         }
@@ -139,7 +135,7 @@ if(file.exists(paste(data_dir, "clusters_screened.RData", sep = ""))){
     print(time_left)
   }
   clusterlist_screened <- Clusterlist
-  save(clusterlist_screened, file = paste(data_dir, "clusters_screened.RData", sep = ""))
+  save(clusterlist_screened, file = snakemake@output[["screened_clusters"]])
 }
 
 
@@ -432,12 +428,12 @@ run_one_id <- function(id){
 #ids <- ids[4:12]
 
 t0 <- Sys.time()
-numCores <- 6
+numCores <- snakemake@threads
 system.time(
   outputs_parallel <- mclapply(ids, run_one_id, mc.cores = numCores)
 )
 
-print(t0-Sys.time())
+#print(t0-Sys.time())
 names(outputs_parallel) <- ids
 
 gene_index <- seq(1,length(GeneLengths))
@@ -475,12 +471,9 @@ for(MGS in allMGS){
 
 
   if(i/nMGS>progress){
-    print(paste(round(as.numeric((i/nMGS)*100),2),'%'))
     progress=progress+increment
-    print('approximate time remaining:')
-    print(((Sys.time()-t0)/i)*(nMGS-i))
   }
 }
 
 
-save(trine_MGS_object, file=paste(data_dir,'/Cluster_object_',as.character(n.mapped.minimum),'_sensitivity_filtered.Rdata',sep=''))
+save(trine_MGS_object, file=snakemake@output[["MGS_object"]])

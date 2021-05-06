@@ -16,39 +16,118 @@
 #!/usr/bin/env python3
 import os
 import sys
-
+import pandas
+import re
 
 #configfile: "config.yaml"
 
 #Get IDs / wildcards for the clusters and the samples
-IDS, =  glob_wildcards("/home/projects/cu_10108/people/trizac/HQ_clusters/contigs/cluster_{id}.fna")
-SAMPLES, = glob_wildcards("/home/projects/cu_10108/people/trizac/reads/{sample}_1.fastq")
 
+clusterfile = config["cluster_analysis_file"]
+IDS = pandas.read_csv(clusterfile, header=None).loc[:, 0].tolist()
+
+SAMPLES, = glob_wildcards("/home/projects/cu_10108/people/trizac/reads/{sample}_1.fastq")
+assemblies, = glob_wildcards("/home/projects/cu_10108/data/Generated/Assemblies/{sample}.fna")
 
 
 #Helper rule
 rule all:
         input: "VAMB_genes/nonredundant_gene_clusters/gene_count_matrix.tsv",
                "VAMB_genes/nonredundant_gene_clusters/geneID_clusterID_snake.tsv",
-               "VAMB_genes/signature_genes/gene_lengths.RDS"
+               "VAMB_genes/signature_genes/MGS_object.Rdata",
+               "VAMB_genes/contigs/clusters.tsv"
 
-# Extracting contigs of checkM approved clusters (>90% completeness and <5% contamination)
-#rule extract_contigs_IDs:
-#    input: 
-#        checkm_approved = "
 
+# Extracting the contigs of only the clusters that are included in the analysis
+rule extract_contigs_IDs:
+    input: 
+        clusters_to_include = config["cluster_analysis_file"],
+        vamb_clusters = config["cluster_file"]
+    output:
+        clusters_with_contigs = "VAMB_genes/contigs/clusters.tsv"
+    threads: 1
+    resources:
+        mem_gb = 180,
+        runtime = 3600 # 1h
+    run: 
+        ID_set = set(IDS) # The IDs of the approved bins from VAMB are collected in a set
+
+        # The approved binIDs are paired with their respective contig IDs and written to a file
+        vamb = open(input.vamb_clusters, 'r')
+        contigsfile = open(output.clusters_with_contigs, 'w')
+
+        # Going through each bin from VAMB only keeping the ones belonging to the clusters we want to include in the analysis
+        for line in vamb:
+            cluster_bin = line.split()[0]
+            cluster = int(cluster_bin.split("_")[-1])
+            if cluster in ID_set:
+                contigsfile.write(line)    
+        vamb.close()
+        contigsfile.close()
+
+
+# Extracting the headers for the contigs belonging to each cluster
+rule extract_contig_headers:
+    input:
+        "VAMB_genes/contigs/clusters.tsv"
+    output:
+        expand("VAMB_genes/contigs/headers_{id}.txt", id=IDS)
+    threads: 20
+    resources:
+        mem_gb = 180,
+        runtime = 86400 # 1d
+    shell: 
+        """
+        cat {input} | while read line; do
+        cols=($line)
+        cluster=$(echo "${{cols[0]}}" | cut -d '_' -f 2)
+	
+        outfile=$(echo "VAMB_genes/contigs/headers_$cluster.txt")
+        echo $line >> $outfile
+        done;
+        """
+
+# For each cluster, the headers of the contigs are used to extract the sequences from the assemblies, creating fna files for each cluster
+rule cluster_sequences:
+    input:
+        headers = "VAMB_genes/contigs/headers_{id}.txt"
+    output:
+        "VAMB_genes/contigs/cluster_{id}.fna"
+    threads: 1
+    resources:
+        mem_gb = 40,
+        runtime = 173000 # 2d
+    params:
+        assembly_dir = config["assemblydir"],
+    shell:
+        """
+        cat {input.headers} | while read line; do
+        cols=($line)
+        cluster=$(echo "${{cols[0]}}" | cut -d '_' -f 2)
+        sample=$(echo "${{cols[0]}}" |	cut -d '_' -f 1)
+        contigfile=$(echo "${{cols[1]}}.tsv")
+        contig_ID=$(echo "${{cols[1]}}")
+        node=$(echo "$(cut -d '_' -f 2- <<< "${{cols[1]}}")")
+        echo "$(cut -d '_' -f 2- <<< "${{cols[1]}}")" > $contigfile
+		
+        fasta=$(echo "{params.assembly_dir}/$sample.fna")
+        seqtk subseq $fasta $contigfile >> {output} ###extracting the sequence of the contig
+        sed -i "s/$node/$contig_ID/g" {output}
+        rm $contigfile ###deleting intermediate files
+        done; 
+        """
 
 # Use prodigal to predict genes
 rule gene_predict:
     input:
-        "HQ_clusters/contigs/cluster_{id}.fna"
+        "VAMB_genes/contigs/cluster_{id}.fna"
     output:
         protein = "VAMB_genes/prodigal_genes/proteins/{id}.faa",
         nuceotides = "VAMB_genes/prodigal_genes/nucleotides/{id}.fna"
     threads: 1
     resources:
         mem_gb = 20,
-        runtime = 43200
+        runtime = 86400 # 24h
     shell:
         "prodigal -i {input} -a {output.protein} -d {output.nuceotides} -p meta"
 
@@ -74,21 +153,21 @@ rule repres_genes:
     input:
         "VAMB_genes/prodigal_genes/all_genes.faa"
     output:
-        fasta = "all_genes95_rep_seq.fasta",
-        tsv = "all_genes95_cluster.tsv"
+        fasta = "VAMB_genes/all_genes95_rep_seq.fasta",
+        tsv = "VAMB_genes/all_genes95_cluster.tsv"
     threads: 14
     resources:
         mem_gb = 50,
         runtime = 86400
     shell:
-        "mmseqs easy-linclust --min-seq-id 0.95 -c 0.95 --threads {threads} {input} all_genes95 tmp;"
+        "mmseqs easy-linclust --min-seq-id 0.95 -c 0.95 --threads {threads} {input} VAMB_genes/all_genes95 tmp;"
 
 
 # Creating a file only containing the redundant genes and their representatives
 # Based on the clustering file from mmseqs
 rule redundant_genes:
     input:
-        "all_genes95_cluster.tsv"
+        "VAMB_genes/all_genes95_cluster.tsv"
     output:
         "VAMB_genes/prodigal_genes/mmseqs_95id/redundant_genes.tsv"
     threads: 1
@@ -138,13 +217,14 @@ rule minimap_index:
     input:
         "VAMB_genes/nonredundant_gene_clusters/all_genes_nonredundant.fasta"
     output:
-        "VAMB_genes/nonredundant_gene_clusters/nonredundant.mmi"
+        index = "VAMB_genes/nonredundant_gene_clusters/nonredundant.mmi",
+        gene_lengths = "VAMB_genes/nonredundant_gene_clusters/all_genes_nonredundant.fasta.fai"
     threads: 1
     resources:
         mem_gb = 50,
         runtime = 86400
     shell:
-        "minimap2 -d {output} {input}"
+        "minimap2 -d {output.index} {input}; touch {output.gene_lengths}"
 
 rule minimap_align:
     input:
@@ -255,9 +335,37 @@ rule format_conversion:
     script:
         "scripts/matrix2SG_formatconversion.R"
 
-#rule SG_refinement:
-#    input:
-#        R_clusters = "
-#    threads: 6
+
+# Identifying the refined sets of signature genes using the gene count matrix and gene lengths
+rule SG_refinement:
+    input:
+        R_clusters = "VAMB_genes/signature_genes/cluster.RDS",
+        R_gene_lengths = "VAMB_genes/signature_genes/gene_lengths.RDS"
+    output:
+        screened_clusters = "VAMB_genes/signature_genes/clusters_screened.Rdata",
+        MGS_object = "VAMB_genes/signature_genes/MGS_object.Rdata"
+    threads: 6
+    resources:
+        mem_gb = 188,
+        runtime = 432000 # 5days
+    params:
+        functions = "Functions_v4.R"
+    script:
+        "scripts/SG_refinement.R"
 
     
+# Creating abundance profiles from the SG
+rule abundance_profile:
+    input:
+        R_gene_lengths = "VAMB_genes/signature_genes/gene_lengths.RDS",
+        R_clusters = "VAMB_genes/signature_genes/cluster.RDS",
+        MGS_object = "VAMB_genes/signature_genes/MGS_object.Rdata",
+        annotation = "GTDB-tk_annotated_clusters.csv"
+    output:
+        physeq_abundance = "VAMB_phyloseq.RData"
+    threads: 6
+    resources:
+        mem_gb = 188,
+        runtime = 43200 #12 h
+    script:
+        "scripts/abundance_profiles.R"
