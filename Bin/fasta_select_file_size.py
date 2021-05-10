@@ -60,7 +60,7 @@ if args.large:
 			subprocess.call(['scp', filename , output])
 		handle.close
    
-# If we are looking for larger than or equal to, this part opens each fna file and
+# If we are looking for smaller than or equal to, this part opens each fna file and
 # sums the length of each fasta entry. If the total length of that file satisfies
 # the provided -S value, the file is copied to output directory.
 if args.small:
