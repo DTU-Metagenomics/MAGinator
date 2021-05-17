@@ -1,0 +1,16 @@
+# This is the default configuration files used by MAGinator 
+# which can be superseded using the snakemake flag --configfile
+
+# File locations:
+binner: VAMB
+binner_output_dir: /home/projects/cu_10108/data/Generated/COPSAC_1/Vamb
+maginator_output_dir: /home/projects/cu_10108/data/Generated/COPSAC_1/MAGinator
+
+# MAGinator variables:
+lower_binsize_cutoff: 200000
+
+# High performance computing setup
+thinnode_cpus: 40
+thinnode_mem: 180gb
+fatnode_cpus: 40
+fatnode_mem: 1400gb
