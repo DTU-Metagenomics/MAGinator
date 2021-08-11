@@ -3,7 +3,7 @@
 This is a collection of tools that should help with downstream analysis of data obtained from metagenomic binners such as Vamb or MSPMiner.
 Vamb provides not only the binning clusters of all related contigs but also the bins obtained from individual samples and like many other programs allows a lot of options. Be aware that your question should dictate your workflow but I am providing information about how I run Vamb to allow better reproduction and as inspiration.
 The provided scripts are all made for high-performance computing servers using a TORQUE Resource Manager and more specifically tested/running on [Computerome 2.0](https://www.computerome.dk/display/C2W/Computerome+2.0). The goal is to provide a snakemake worfklow incorporating conda environments for a user-friendly and reproducible workflow.
-<img align="center" src="https://github.com/DTU-Metagenomics/MAGinator/blob/gh-pages/workflow.png?raw=true" width="600">
+<img align="center" src="https://github.com/DTU-Metagenomics/MAGinator/blob/gh-pages/MAGinator_workflow.png?raw=true" width="1000">
 ### Binning using Vamb
 This example binning workflow was used for fecal samples. It is provided mainly to allow reproduction, but can of course be used. Remember to adjust according to your data and hypothesis. You should also check input/output using [FastQC](https://github.com/s-andrews/FastQC) at every step to insure optimal quality. For VAMB documentation look at [Vambs](https://github.com/RasmussenLab/vamb) Github which now includes a snakemake! <br>
 #### Overview
