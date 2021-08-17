@@ -32,7 +32,7 @@ Finally, you need to install snakemake. This should preferrably have it's own en
 mamba create -c conda-forge -c bioconda -n snakemake snakemake
 conda activate snakemake
 ```
-**The snakemake environment should be your MAGinator working environment**
+**The snakemake environment should be your MAGinator working environment.**
 ## Postprocessing contig-based bins from VAMB
 <img align="right" src="https://github.com/DTU-Metagenomics/MAGinator/blob/gh-pages/plot_binsizes.png?raw=true" width="500">
 
