@@ -17,14 +17,22 @@ This example binning workflow was used for fecal samples. It is provided mainly 
 8. [This script](https://github.com/DTU-Metagenomics/MAGinator/blob/main/Scripts/qsub_fasta_coverage.sh) analyses the contig coverage using JGIs [jgi_summarize_bam_contig_depths](https://bitbucket.org/berkeleylab/metabat/src/master/), which is actually part of the Metabat binner.
 9. Now we are ready to bin using [this script](https://github.com/DTU-Metagenomics/MAGinator/blob/main/Scripts/qsub_vamb_bin.sh) which is running the GPU-accelerated [VAMB](https://github.com/RasmussenLab/vamb).
 ## Installation on Linux
-MAGinator uses conda environments and snakemake. First you will need to install [miniconda](https://docs.conda.io/en/latest/miniconda.html) with Python 3.9. We download miniconda:
-> wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh <br>
-> bash Miniconda3-py39_4.9.2-Linux-x86_64.sh
-
-Follow the instructions and remember to install miniconda in an appropriate location.
+MAGinator uses conda environments and snakemake. First you will need to install [miniconda](https://docs.conda.io/en/latest/miniconda.html) with Python 3.9. We download and install miniconda:
+```
+> wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+> bash Miniconda3-latest-Linux-x86_64.sh <br>
+```
+Follow the instructions and remember to install miniconda in an appropriate location. However, the workflow is designed so that you CAN work with one dedicated shared installation to avoid excessive storage usage so you might want to talk about this if you are several users.
 You will also need the package manager mamba
+```
 > conda install -c conda-forge mamba
-
+```
+Finally, you need to install snakemake. This should preferrably have it's own environment to avoid side effects with other packages.
+```
+mamba create -c conda-forge -c bioconda -n snakemake snakemake
+conda activate snakemake
+```
+**The snakemake environment should be your MAGinator working environment**
 ## Postprocessing contig-based bins from VAMB
 <img align="right" src="https://github.com/DTU-Metagenomics/MAGinator/blob/gh-pages/plot_binsizes.png?raw=true" width="500">
 
