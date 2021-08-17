@@ -50,7 +50,7 @@ Now that we have separated potential MAGs (bins larger than our cut-off), we wou
 [This Snakefile](https://github.com/DTU-Metagenomics/MAGinator/blob/main/gene_count_matrix/Snakefile_VAMBgenes) takes the sequences of VAMB clusters and produces a gene count matrix of the nonredundant genes for each cluster (also excluding representative sequences). 
 
 The rulegraph of the suggested pipeline is seen as:
-<img src="https://raw.githubusercontent.com/gisleDK/MAGinator/main/gene_count_matrix/rulegraph.svg">
+<img src="https://raw.githubusercontent.com/DTU-Metagenomics/MAGinator/main/gene_count_matrix/rulegraph.svg">
 
 ### Binning clusters signature genes
 
